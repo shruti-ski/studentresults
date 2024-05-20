@@ -81,44 +81,49 @@
 </html>
 
 <?php
+    include('init.php');
+    include('session.php');
 
     if(isset($_POST['student_name'],$_POST['roll_no'])) {
-        $name=$_POST['student_name'];
-        $rno=$_POST['roll_no'];
-        if(!isset($_POST['class_name']))
-            $class_name=null;
-        else
-            $class_name=$_POST['class_name'];
+        $name = $_POST['student_name'];
+        $rno = $_POST['roll_no'];
+        $class_name = isset($_POST['class_name']) ? $_POST['class_name'] : null;
 
-        // validation
-        if (empty($name) or empty($rno) or empty($class_name) or preg_match("/[a-z]/i",$rno) or !preg_match("/^[a-zA-Z ]*$/",$name)) {
-            if(empty($name))
+        // Validation
+        if (empty($name) || empty($rno) || empty($class_name) || !preg_match("/^[a-zA-Z\s]*$/", $name) || !ctype_alnum($rno)) {
+            if (empty($name)) {
                 echo '<p class="error">Please enter name</p>';
-            if(empty($class_name))
+            }
+            if (empty($class_name)) {
                 echo '<p class="error">Please select your class</p>';
-            if(empty($rno))
+            }
+            if (empty($rno)) {
                 echo '<p class="error">Please enter your roll number</p>';
-            if(preg_match("/[a-z]/i",$rno))
+            }
+            if (!ctype_alnum($rno)) {
                 echo '<p class="error">Please enter valid roll number</p>';
-            if (!preg_match("/^[a-zA-Z ]*$/",$name)) {
-                    echo '<p class="error">No numbers or symbols allowed in name</p>'; 
-                  }
+            }
+            if (!preg_match("/^[a-zA-Z\s]*$/", $name)) {
+                echo '<p class="error">No numbers or symbols allowed in name</p>';
+            }
             exit();
         }
         
-        $sql = "INSERT INTO `students` (`name`, `rno`, `class_name`) VALUES ('$name', '$rno', '$class_name')";
-        $result=mysqli_query($conn,$sql);
+        // Inserting into database
+        $insert_query = "INSERT INTO `students` (`name`, `rno`, `class_name`) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($insert_query);
+        $stmt->bind_param("sss", $name, $rno, $class_name);
+        $result = $stmt->execute();
         
         if (!$result) {
             echo '<script language="javascript">';
             echo 'alert("Invalid Details")';
             echo '</script>';
         }
-        else{
+        else {
             echo '<script language="javascript">';
             echo 'alert("Successful")';
             echo '</script>';
         }
-
     }
 ?>

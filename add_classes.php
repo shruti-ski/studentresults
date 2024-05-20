@@ -71,33 +71,29 @@
 	include('init.php');
     include('session.php');
 
-    if (isset($_POST['class_name'],$_POST['class_id'])) {
-        $name=$_POST["class_name"];
-        $id=$_POST["class_id"];
+    if (isset($_POST['class_name'], $_POST['class_id'])) {
+        $name = $_POST["class_name"];
+        $id = $_POST["class_id"];
 
-        // validation
-        if (empty($name) or empty($id) or preg_match("/[a-z]/i",$id)) {
-            if(empty($name))
-                echo '<p class="error">Please enter class</p>';
-            if(empty($id))
-                echo '<p class="error">Please enter class id</p>';
-            if(preg_match("/[a-z]/i",$id))
-                echo '<p class="error">Please enter valid class id</p>';
+        // Validation
+        if (empty($name) || empty($id) || !ctype_alnum($id)) {
+            echo '<p class="error">Please enter a valid class name and class ID</p>';
             exit();
         }
 
-        $sql = "INSERT INTO `class` (`name`, `id`) VALUES ('$name', '$id')";
-        $result=mysqli_query($conn,$sql);
+        $sql = "INSERT INTO `class` (`name`, `id`) VALUES (?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ss", $name, $id);
+        $result = $stmt->execute();
         
         if (!$result) {
             echo '<script language="javascript">';
-            echo 'alert("Invalid class name or class id")';
+            echo 'alert("Invalid class name or class ID")';
             echo '</script>';
-        } else{
+        } else {
             echo '<script language="javascript">';
-            echo 'alert("Successful)';
+            echo 'alert("Successful")';
             echo '</script>';
         }
     }
-
 ?>
